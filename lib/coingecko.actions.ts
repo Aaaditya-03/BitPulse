@@ -1,73 +1,94 @@
-'use server';
+"use server";
 
-import qs from 'query-string';
+import qs from "query-string";
 
 const BASE_URL = process.env.COINGECKO_BASE_URL;
 const API_KEY = process.env.COINGECKO_API_KEY;
 
-if (!BASE_URL) throw new Error('Could not get base url');
-if (!API_KEY) throw new Error('Could not get api key');
+if (!BASE_URL) throw new Error("Could not get base url");
+if (!API_KEY) throw new Error("Could not get api key");
 
+/**
+ * Fetches data from the CoinGecko API.
+ * @param endpoint - The API endpoint to fetch data from.
+ * @param params - Optional query parameters to include in the request.
+ * @param revalidate - The cache revalidation time in seconds (default is 60).
+ * @returns A promise that resolves to the expected generic type T.
+ */
 export async function fetcher<T>(
-  endpoint: string,
-  params?: QueryParams,
-  revalidate = 60,
+	endpoint: string,
+	params?: QueryParams,
+	revalidate = 60,
 ): Promise<T> {
-  const url = qs.stringifyUrl(
-    {
-      url: `${BASE_URL}/${endpoint}`,
-      query: params,
-    },
-    { skipEmptyString: true, skipNull: true },
-  );
+	const url = qs.stringifyUrl(
+		{
+			url: `${BASE_URL}/${endpoint}`,
+			query: params,
+		},
+		{ skipEmptyString: true, skipNull: true },
+	);
 
-  const response = await fetch(url, {
-    headers: {
-      'x-cg-pro-api-key': API_KEY,
-      'Content-Type': 'application/json',
-    } as Record<string, string>,
-    next: { revalidate },
-  });
+	const response = await fetch(url, {
+		headers: {
+			"x-cg-pro-api-key": API_KEY,
+			"Content-Type": "application/json",
+		} as Record<string, string>,
+		next: { revalidate },
+	});
 
-  if (!response.ok) {
-    const errorBody: CoinGeckoErrorBody = await response.json().catch(() => ({}));
+	if (!response.ok) {
+		const errorBody: CoinGeckoErrorBody = await response
+			.json()
+			.catch(() => ({}));
 
-    throw new Error(`API Error: ${response.status}: ${errorBody.error || response.statusText} `);
-  }
+		throw new Error(
+			`API Error: ${response.status}: ${errorBody.error || response.statusText} `,
+		);
+	}
 
-  return response.json();
+	return response.json();
 }
 
+/**
+ * Retrieves pool data based on the provided identifier, network, and contract address.
+ * @param id - The identifier for the pool.
+ * @param network - Optional network name.
+ * @param contractAddress - Optional contract address for the pool.
+ * @returns A promise that resolves to the pool data or a fallback default on failure.
+ */
 export async function getPools(
-  id: string,
-  network?: string | null,
-  contractAddress?: string | null,
+	id: string,
+	network?: string | null,
+	contractAddress?: string | null,
 ): Promise<PoolData> {
-  const fallback: PoolData = {
-    id: '',
-    address: '',
-    name: '',
-    network: '',
-  };
+	const fallback: PoolData = {
+		id: "",
+		address: "",
+		name: "",
+		network: "",
+	};
 
-  if (network && contractAddress) {
-    try {
-      const poolData = await fetcher<{ data: PoolData[] }>(
-        `/onchain/networks/${network}/tokens/${contractAddress}/pools`,
-      );
+	if (network && contractAddress) {
+		try {
+			const poolData = await fetcher<{ data: PoolData[] }>(
+				`/onchain/networks/${network}/tokens/${contractAddress}/pools`,
+			);
 
-      return poolData.data?.[0] ?? fallback;
-    } catch (error) {
-      console.log(error);
-      return fallback;
-    }
-  }
+			return poolData.data?.[0] ?? fallback;
+		} catch (error) {
+			console.log(error);
+			return fallback;
+		}
+	}
 
-  try {
-    const poolData = await fetcher<{ data: PoolData[] }>('/onchain/search/pools', { query: id });
+	try {
+		const poolData = await fetcher<{ data: PoolData[] }>(
+			"/onchain/search/pools",
+			{ query: id },
+		);
 
-    return poolData.data?.[0] ?? fallback;
-  } catch {
-    return fallback;
-  }
+		return poolData.data?.[0] ?? fallback;
+	} catch {
+		return fallback;
+	}
 }
