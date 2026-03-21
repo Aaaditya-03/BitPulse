@@ -30,9 +30,12 @@ export async function fetcher<T>(
 		{ skipEmptyString: true, skipNull: true },
 	);
 
+	const isPro = (BASE_URL || "").includes("pro-api");
+	const headerKey = isPro ? "x-cg-pro-api-key" : "x-cg-demo-api-key";
+
 	const response = await fetch(url, {
 		headers: {
-			"x-cg-pro-api-key": API_KEY,
+			[headerKey]: API_KEY,
 			"Content-Type": "application/json",
 		} as Record<string, string>,
 		next: { revalidate },
