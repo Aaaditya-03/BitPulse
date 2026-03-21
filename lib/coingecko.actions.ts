@@ -13,12 +13,14 @@ if (!API_KEY) throw new Error("Could not get api key");
  * @param endpoint - The API endpoint to fetch data from.
  * @param params - Optional query parameters to include in the request.
  * @param revalidate - The cache revalidation time in seconds (default is 60).
+ * @param timeout - The request timeout in milliseconds (default is 10000).
  * @returns A promise that resolves to the expected generic type T.
  */
 export async function fetcher<T>(
 	endpoint: string,
 	params?: QueryParams,
 	revalidate = 60,
+	timeout = 10000,
 ): Promise<T> {
 	const url = qs.stringifyUrl(
 		{
@@ -34,6 +36,7 @@ export async function fetcher<T>(
 			"Content-Type": "application/json",
 		} as Record<string, string>,
 		next: { revalidate },
+		signal: AbortSignal.timeout(timeout),
 	});
 
 	if (!response.ok) {
