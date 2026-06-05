@@ -1,6 +1,8 @@
 import React, { Suspense } from "react";
 import Categories from "@/components/home/Categories";
 import CoinOverview from "@/components/home/CoinOverview";
+import MarketStatsBar from "@/components/home/MarketStatsBar";
+import TopGainersLosers from "@/components/home/TopGainersLosers";
 import {
 	CategoriesFallback,
 	CoinOverviewFallback,
@@ -14,18 +16,47 @@ import TrendingCoins from "@/components/home/TrendingCoins";
  */
 const Page = async () => {
 	return (
-		<main className="main-container">
-			<section className="home-grid">
-				<Suspense fallback={<CoinOverviewFallback />}>
-					<CoinOverview />
-				</Suspense>
-
-				<Suspense fallback={<TrendingCoinsFallback />}>
-					<TrendingCoins />
+		<main className="main-container max-w-7xl mx-auto px-4 py-8 space-y-8">
+			{/* Top: Macro Market Stats Bar */}
+			<section className="w-full">
+				<Suspense fallback={
+					<div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full">
+						{[...Array(4)].map((_, i) => (
+							<div key={i} className="bg-dark-500/30 border border-purple-500/5 backdrop-blur-md rounded-2xl p-4 h-24 animate-pulse" />
+						))}
+					</div>
+				}>
+					<MarketStatsBar />
 				</Suspense>
 			</section>
 
-			<section className="w-full mt-7 space-y-4">
+			{/* Middle: Chart & Sidebar Leaderboard Grid */}
+			<section className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
+				{/* Chart Area (2/3 width on desktop) */}
+				<div className="xl:col-span-2">
+					<Suspense fallback={<CoinOverviewFallback />}>
+						<CoinOverview />
+					</Suspense>
+				</div>
+
+				{/* Sidebar stack (1/3 width on desktop) */}
+				<div className="flex flex-col gap-8">
+					<Suspense fallback={<TrendingCoinsFallback />}>
+						<TrendingCoins />
+					</Suspense>
+
+					<Suspense fallback={
+						<div className="w-full bg-dark-500 rounded-xl p-6 h-[380px] flex items-center justify-center border border-purple-500/10 animate-pulse">
+							<span className="text-sm text-purple-200/50">Loading leaders...</span>
+						</div>
+					}>
+						<TopGainersLosers />
+					</Suspense>
+				</div>
+			</section>
+
+			{/* Bottom: Asset Categories */}
+			<section className="w-full space-y-4">
 				<Suspense fallback={<CategoriesFallback />}>
 					<Categories />
 				</Suspense>

@@ -1,10 +1,9 @@
 import Image from "next/image";
 import React from "react";
+import CandlestickChart from "@/components/CandlestickChart";
 import { fetcher } from "@/lib/coingecko.actions";
 import { formatCurrency } from "@/lib/utils";
 import { CoinOverviewFallback } from "./fallback";
-
-// import CandlestickChart from '@/components/CandlestickChart';
 
 /**
  * Displays an overview of a specific coin (defaulting to Bitcoin), including its current price
@@ -20,7 +19,6 @@ const CoinOverview = async () => {
 			fetcher<OHLCData[]>("/coins/bitcoin/ohlc", {
 				vs_currency: "usd",
 				days: 1,
-				interval: "hourly",
 				precision: "full",
 			}),
 		]);
