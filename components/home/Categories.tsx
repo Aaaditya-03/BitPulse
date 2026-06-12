@@ -16,11 +16,13 @@ const Categories = async () => {
 
 		const columns: DataTableColumn<Category>[] = [
 			{
+				key: "name",
 				header: "Category",
 				cellClassName: "category-cell",
 				cell: (category) => category.name,
 			},
 			{
+				key: "top_gainers",
 				header: "Top Gainers",
 				cellClassName: "top-gainers-cell",
 				cell: (category) =>
@@ -29,6 +31,7 @@ const Categories = async () => {
 					)),
 			},
 			{
+				key: "change",
 				header: "24h Change",
 				cellClassName: "change-header-cell",
 				cell: (category) => {
@@ -54,11 +57,13 @@ const Categories = async () => {
 				},
 			},
 			{
+				key: "market_cap",
 				header: "Market Cap",
 				cellClassName: "market-cap-cell",
 				cell: (category) => formatCurrency(category.market_cap),
 			},
 			{
+				key: "volume",
 				header: "24h Volume",
 				cellClassName: "volume-cell",
 				cell: (category) => formatCurrency(category.volume_24h),

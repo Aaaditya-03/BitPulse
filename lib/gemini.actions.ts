@@ -1,7 +1,7 @@
 "use server";
 
-import { fetcher } from "@/lib/coingecko.actions";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { fetcher } from "@/lib/coingecko.actions";
 
 export interface ChatMessage {
 	role: "user" | "model";
@@ -41,10 +41,11 @@ export async function sendChatMessage(
 				sparkline: "false",
 			});
 
-			if (coin && coin.market_data) {
+			if (coin?.market_data) {
 				const priceInr = coin.market_data.current_price.inr;
 				const priceUsd = coin.market_data.current_price.usd;
-				const priceChange24h = coin.market_data.price_change_percentage_24h_in_currency.usd || 0;
+				const priceChange24h =
+					coin.market_data.price_change_percentage_24h_in_currency.usd || 0;
 				const marketCap = coin.market_data.market_cap.usd;
 				const volume24h = coin.market_data.total_volume.usd;
 
@@ -73,7 +74,8 @@ export async function sendChatMessage(
 				// Liquidity Points (max 30)
 				if (liquidityRatio < 0.01) {
 					riskScore += 30;
-					riskReason += "extremely low volume relative to market cap (low liquidity); ";
+					riskReason +=
+						"extremely low volume relative to market cap (low liquidity); ";
 				} else if (liquidityRatio < 0.03) {
 					riskScore += 15;
 					riskReason += "moderate liquidity ratio (3-5% volume/cap); ";
@@ -85,7 +87,8 @@ export async function sendChatMessage(
 				// Market Cap Size Points (max 30)
 				if (marketCap < 50_000_000) {
 					riskScore += 30;
-					riskReason += "micro-cap size (under $50M), vulnerable to market manipulation; ";
+					riskReason +=
+						"micro-cap size (under $50M), vulnerable to market manipulation; ";
 				} else if (marketCap < 1_000_000_000) {
 					riskScore += 20;
 					riskReason += "mid-cap size ($50M-$1B); ";
@@ -155,8 +158,10 @@ Formatting guidelines:
 		});
 
 		return response.response.text() || "I couldn't generate a response.";
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.error("Gemini API Error:", error);
-		throw new Error(error?.message || "Failed to communicate with AI.");
+		const errorMessage =
+			error instanceof Error ? error.message : "Failed to communicate with AI.";
+		throw new Error(errorMessage);
 	}
 }

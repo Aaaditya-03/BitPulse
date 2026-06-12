@@ -13,8 +13,8 @@ interface CandlestickChartProps {
 	children?: React.ReactNode;
 	mode?: "historical" | "live";
 	initialPeriod?: Period;
-	liveInterval?: "1s" | "1m";
-	setLiveInterval?: (interval: "1s" | "1m") => void;
+	liveInterval?: "off" | "30s" | "1m" | "5m";
+	setLiveInterval?: (interval: "off" | "30s" | "1m" | "5m") => void;
 }
 
 interface ConverterProps {
@@ -278,6 +278,7 @@ interface UseCoinGeckoWebSocketReturn {
 }
 
 interface DataTableColumn<T> {
+	key: string;
 	header: React.ReactNode;
 	cell: (row: T, index: number) => React.ReactNode;
 	headClassName?: string;

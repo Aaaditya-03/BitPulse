@@ -2,6 +2,7 @@ import { TrendingDown, TrendingUp } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import DataTable from "@/components/DataTable";
+import WatchlistStar from "@/components/ui/WatchlistStar";
 import { fetcher } from "@/lib/coingecko.actions";
 import { cn, formatCurrency, formatPercentage } from "@/lib/utils";
 import { TrendingCoinsFallback } from "./fallback";
@@ -27,6 +28,16 @@ const TrendingCoins = async () => {
 
 	const columns: DataTableColumn<TrendingCoin>[] = [
 		{
+			key: "watchlist",
+			header: "",
+			cellClassName: "w-8 py-3!",
+			cell: (coin) => {
+				const item = coin.item;
+				return <WatchlistStar coinId={item.id} />;
+			},
+		},
+		{
+			key: "name",
 			header: "Name",
 			cellClassName: "name-cell",
 			cell: (coin) => {
@@ -41,6 +52,7 @@ const TrendingCoins = async () => {
 			},
 		},
 		{
+			key: "change",
 			header: "24h Change",
 			cellClassName: "change-cell",
 			cell: (coin) => {
@@ -67,6 +79,7 @@ const TrendingCoins = async () => {
 			},
 		},
 		{
+			key: "price",
 			header: "Price",
 			cellClassName: "price-cell",
 			cell: (coin) => formatCurrency(coin.item.data.price),

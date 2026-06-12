@@ -1,5 +1,4 @@
 import Image from "next/image";
-import React from "react";
 import CandlestickChart from "@/components/CandlestickChart";
 import { fetcher } from "@/lib/coingecko.actions";
 import { formatCurrency } from "@/lib/utils";

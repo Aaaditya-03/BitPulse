@@ -25,7 +25,7 @@ export function formatCurrency(
 	currency?: string,
 	showSymbol?: boolean,
 ) {
-	if (value === null || value === undefined || isNaN(value)) {
+	if (value === null || value === undefined || Number.isNaN(value)) {
 		return showSymbol !== false ? "$0.00" : "0.00";
 	}
 
@@ -49,7 +49,7 @@ export function formatCurrency(
  * @returns A formatted percentage string, e.g., "1.5%".
  */
 export function formatPercentage(change: number | null | undefined): string {
-	if (change === null || change === undefined || isNaN(change)) {
+	if (change === null || change === undefined || Number.isNaN(change)) {
 		return "0.0%";
 	}
 	const formattedChange = change.toFixed(1);
@@ -143,3 +143,54 @@ export const buildPageNumbers = (
 
 	return pages;
 };
+
+/**
+ * Calculates Simple Moving Average (SMA) for OHLC data.
+ */
+export function calculateSMA(
+	data: OHLCData[],
+	period: number,
+): { time: Time; value: number }[] {
+	const sma: { time: Time; value: number }[] = [];
+	for (let i = 0; i < data.length; i++) {
+		if (i < period - 1) continue;
+		let sum = 0;
+		for (let j = 0; j < period; j++) {
+			sum += data[i - j][4]; // Close price is at index 4
+		}
+		// Auto-detect milliseconds vs seconds
+		const rawTime = data[i][0];
+		const timestamp = (rawTime > 1e11 ? Math.floor(rawTime / 1000) : rawTime) as Time;
+		sma.push({ time: timestamp, value: sum / period });
+	}
+	return sma;
+}
+
+/**
+ * Calculates Exponential Moving Average (EMA) for OHLC data.
+ */
+export function calculateEMA(
+	data: OHLCData[],
+	period: number,
+): { time: Time; value: number }[] {
+	const ema: { time: Time; value: number }[] = [];
+	if (data.length === 0) return ema;
+
+	const alpha = 2 / (period + 1);
+	let prevEma = data[0][4]; // Initial seed is first close
+
+	const firstRawTime = data[0][0];
+	const firstTimestamp = (firstRawTime > 1e11 ? Math.floor(firstRawTime / 1000) : firstRawTime) as Time;
+	ema.push({ time: firstTimestamp, value: prevEma });
+
+	for (let i = 1; i < data.length; i++) {
+		const close = data[i][4];
+		const currentEma = close * alpha + prevEma * (1 - alpha);
+		const rawTime = data[i][0];
+		const timestamp = (rawTime > 1e11 ? Math.floor(rawTime / 1000) : rawTime) as Time;
+		ema.push({ time: timestamp, value: currentEma });
+		prevEma = currentEma;
+	}
+
+	return ema.slice(period - 1);
+}

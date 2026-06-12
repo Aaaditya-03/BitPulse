@@ -1,11 +1,11 @@
 "use client";
 
+import { Home } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import HeaderSearch from "./HeaderSearch";
-import { Home } from "lucide-react";
 
 /**
  * The main application header component, containing the logo, interactive search, and navigation.
@@ -20,7 +20,12 @@ const Header = () => {
 				{/* Logo */}
 				<Link href="/" className="flex items-center gap-2 shrink-0">
 					<div className="relative hover:scale-[1.02] transition-transform duration-300">
-						<Image src="/logo.svg" alt="BitPulse logo" width={132} height={40} />
+						<Image
+							src="/logo.svg"
+							alt="BitPulse logo"
+							width={132}
+							height={40}
+						/>
 					</div>
 				</Link>
 

@@ -1,20 +1,18 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { useParams, usePathname } from "next/navigation";
 import {
-	MessageSquare,
-	Send,
-	X,
-	Sparkles,
-	Settings,
-	AlertTriangle,
 	ArrowRight,
 	Bot,
+	MessageSquare,
+	Send,
+	Settings,
+	Sparkles,
 	User,
-	TrendingUp,
+	X,
 } from "lucide-react";
-import { sendChatMessage, type ChatMessage } from "@/lib/gemini.actions";
+import { useParams, usePathname } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { type ChatMessage, sendChatMessage } from "@/lib/gemini.actions";
 
 export default function Chatbot() {
 	const params = useParams();
@@ -33,18 +31,20 @@ export default function Chatbot() {
 	const [isLoading, setIsLoading] = useState(false);
 	const [showSettings, setShowSettings] = useState(false);
 	const [userApiKey, setUserApiKey] = useState("");
-	const [apiKeyStatus, setApiKeyStatus] = useState<"not_set" | "set">("not_set");
+	const [_apiKeyStatus, setApiKeyStatus] = useState<"not_set" | "set">(
+		"not_set",
+	);
 
 	// Auto-scroll to bottom of chat
-	const scrollToBottom = () => {
+	const scrollToBottom = useCallback(() => {
 		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-	};
+	}, []);
 
 	useEffect(() => {
 		if (isOpen) {
 			scrollToBottom();
 		}
-	}, [messages, isOpen]);
+	}, [isOpen, scrollToBottom]);
 
 	// Load local storage API key if exists
 	useEffect(() => {
@@ -95,9 +95,10 @@ export default function Chatbot() {
 			);
 
 			setMessages((prev) => [...prev, { role: "model", content: response }]);
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error("Chat error:", error);
-			if (error.message === "MISSING_API_KEY") {
+			const err = error as { message?: string };
+			if (err?.message === "MISSING_API_KEY") {
 				setMessages((prev) => [
 					...prev,
 					{
@@ -127,12 +128,12 @@ export default function Chatbot() {
 				`Is ${activeCoinId.toUpperCase()} risky to trade today?`,
 				`Show volatility analysis for ${activeCoinId.toUpperCase()}`,
 				"What criteria makes a coin safe?",
-		  ]
+			]
 		: [
 				"Is BTC risky to trade today?",
 				"Which coins are currently safe?",
 				"Explain liquidity ratio risk.",
-		  ];
+			];
 
 	return (
 		<div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
@@ -192,10 +193,14 @@ export default function Chatbot() {
 							</p>
 
 							<div className="flex flex-col gap-1.5">
-								<label className="text-[11px] text-purple-200/40 uppercase tracking-wider font-semibold">
+								<label
+									htmlFor="gemini-api-key"
+									className="text-[11px] text-purple-200/40 uppercase tracking-wider font-semibold"
+								>
 									Gemini API Key
 								</label>
 								<input
+									id="gemini-api-key"
 									type="password"
 									value={userApiKey}
 									onChange={(e) => setUserApiKey(e.target.value)}
@@ -227,6 +232,7 @@ export default function Chatbot() {
 							<div className="flex-1 overflow-y-auto px-5 py-4 space-y-4 scrollbar-thin scrollbar-thumb-purple-500/10">
 								{messages.map((msg, index) => (
 									<div
+										// biome-ignore lint/suspicious/noArrayIndexKey: indices are stable since messages are only appended
 										key={index}
 										className={`flex gap-2.5 max-w-[85%] ${
 											msg.role === "user" ? "ml-auto flex-row-reverse" : ""
@@ -276,9 +282,9 @@ export default function Chatbot() {
 							{/* Suggestions view (show only when input is empty and not loading) */}
 							{!input.trim() && !isLoading && (
 								<div className="px-5 py-2 flex flex-wrap gap-1.5 border-t border-purple-500/5 bg-white/[0.01]">
-									{suggestions.map((sug, i) => (
+									{suggestions.map((sug) => (
 										<button
-											key={i}
+											key={sug}
 											onClick={() => handleSend(sug)}
 											className="text-[11px] px-2.5 py-1 rounded-full bg-dark-800/80 border border-purple-500/10 hover:border-purple-500/30 text-purple-200/80 hover:text-purple-100 transition-all text-left flex items-center gap-1"
 											type="button"

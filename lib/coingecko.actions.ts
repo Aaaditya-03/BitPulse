@@ -103,8 +103,10 @@ export async function getPools(
  * Fetches global cryptocurrency market data.
  * Cached for 10 minutes (600s) to avoid rate limits.
  */
+// biome-ignore lint/suspicious/noExplicitAny: Global market data is a complex nested structure
 export async function getGlobalMarketData(): Promise<any> {
 	try {
+		// biome-ignore lint/suspicious/noExplicitAny: API response is dynamic
 		const result = await fetcher<{ data: any }>("/global", undefined, 600);
 		return result?.data ?? null;
 	} catch (error) {
@@ -160,14 +162,20 @@ export async function getTopGainersLosers(): Promise<{
 		if (!Array.isArray(coins)) return fallback;
 
 		// Sort by 24h change descending for gainers
-		const sorted = [...coins].filter((c) => c.price_change_percentage_24h !== null);
+		const sorted = [...coins].filter(
+			(c) => c.price_change_percentage_24h !== null,
+		);
 
 		const gainers = [...sorted]
-			.sort((a, b) => b.price_change_percentage_24h - a.price_change_percentage_24h)
+			.sort(
+				(a, b) => b.price_change_percentage_24h - a.price_change_percentage_24h,
+			)
 			.slice(0, 5);
 
 		const losers = [...sorted]
-			.sort((a, b) => a.price_change_percentage_24h - b.price_change_percentage_24h)
+			.sort(
+				(a, b) => a.price_change_percentage_24h - b.price_change_percentage_24h,
+			)
 			.slice(0, 5);
 
 		return { gainers, losers };
@@ -177,3 +185,55 @@ export async function getTopGainersLosers(): Promise<{
 	}
 }
 
+/**
+ * Fetches market data for specific coins in the watchlist.
+ * Cached for 30 seconds to provide responsive updates.
+ */
+export async function getWatchlistCoins(
+	ids: string[],
+): Promise<CoinMarketData[]> {
+	if (!ids || ids.length === 0) return [];
+	try {
+		return await fetcher<CoinMarketData[]>(
+			"/coins/markets",
+			{
+				vs_currency: "usd",
+				ids: ids.join(","),
+				order: "market_cap_desc",
+				per_page: ids.length,
+				page: 1,
+				sparkline: "false",
+			},
+			30, // cache for 30 seconds
+		);
+	} catch (error) {
+		console.error("Error fetching watchlist coins:", error);
+		return [];
+	}
+}
+
+/**
+ * Fetches market data for coins with pagination support.
+ * Cached for 2 minutes (120s).
+ */
+export async function getCoinsMarkets(
+	page = 1,
+	perPage = 50,
+): Promise<CoinMarketData[]> {
+	try {
+		return await fetcher<CoinMarketData[]>(
+			"/coins/markets",
+			{
+				vs_currency: "usd",
+				order: "market_cap_desc",
+				per_page: perPage,
+				page,
+				sparkline: "false",
+			},
+			120, // cache for 120 seconds
+		);
+	} catch (error) {
+		console.error("Error fetching coins markets:", error);
+		return [];
+	}
+}

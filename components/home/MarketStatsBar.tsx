@@ -1,6 +1,12 @@
-import React from "react";
+import {
+	Activity,
+	Coins,
+	Database,
+	Percent,
+	TrendingDown,
+	TrendingUp,
+} from "lucide-react";
 import { getGlobalMarketData } from "@/lib/coingecko.actions";
-import { TrendingUp, TrendingDown, Coins, Activity, Percent, Database } from "lucide-react";
 
 export default async function MarketStatsBar() {
 	const data = await getGlobalMarketData();
@@ -8,8 +14,11 @@ export default async function MarketStatsBar() {
 	if (!data) {
 		return (
 			<div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full">
-				{[...Array(4)].map((_, i) => (
-					<div key={i} className="bg-dark-500/30 border border-purple-500/5 backdrop-blur-md rounded-2xl p-4 h-24 animate-pulse" />
+				{["sk-bar-1", "sk-bar-2", "sk-bar-3", "sk-bar-4"].map((keyId) => (
+					<div
+						key={keyId}
+						className="bg-dark-500/30 border border-purple-500/5 backdrop-blur-md rounded-2xl p-4 h-24 animate-pulse"
+					/>
 				))}
 			</div>
 		);
@@ -23,7 +32,10 @@ export default async function MarketStatsBar() {
 	const isCapUp = capChange24h >= 0;
 
 	return (
-		<div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full" id="market-stats-bar">
+		<div
+			className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full"
+			id="market-stats-bar"
+		>
 			{/* Market Cap */}
 			<div className="bg-dark-500/30 border border-purple-500/10 hover:border-purple-500/20 backdrop-blur-md rounded-2xl p-4 flex items-center justify-between transition-all duration-300">
 				<div>
@@ -33,9 +45,16 @@ export default async function MarketStatsBar() {
 					<span className="text-base sm:text-lg font-bold text-white mt-1 block">
 						${(totalCap / 1e12).toFixed(2)}T
 					</span>
-					<span className={`text-xs font-semibold flex items-center gap-0.5 mt-1 ${isCapUp ? "text-green-500" : "text-red-500"}`}>
-						{isCapUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-						{isCapUp ? "+" : ""}{capChange24h.toFixed(2)}%
+					<span
+						className={`text-xs font-semibold flex items-center gap-0.5 mt-1 ${isCapUp ? "text-green-500" : "text-red-500"}`}
+					>
+						{isCapUp ? (
+							<TrendingUp className="w-3 h-3" />
+						) : (
+							<TrendingDown className="w-3 h-3" />
+						)}
+						{isCapUp ? "+" : ""}
+						{capChange24h.toFixed(2)}%
 					</span>
 				</div>
 				<div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">

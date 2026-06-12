@@ -29,9 +29,9 @@ const DataTable = <T,>({
 		<Table className={cn("custom-scrollbar", tableClassName)}>
 			<TableHeader className={headerClassName}>
 				<TableRow className={cn("hover:bg-transparent!", headerRowClassName)}>
-					{columns.map((column, i) => (
+					{columns.map((column) => (
 						<TableHead
-							key={i}
+							key={column.key}
 							className={cn(
 								"bg-dark-400 text-purple-100 py-4 first:pl-5 last:pr-5",
 								headerCellClassName,
@@ -52,9 +52,9 @@ const DataTable = <T,>({
 							bodyRowClassName,
 						)}
 					>
-						{columns.map((column, columnIndex) => (
+						{columns.map((column) => (
 							<TableCell
-								key={columnIndex}
+								key={column.key}
 								className={cn(
 									"py-4 first:pl-5 last:pr-5",
 									bodyCellClassName,

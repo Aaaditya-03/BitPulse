@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
+import { Loader2, TrendingDown, TrendingUp } from "lucide-react";
 import Image from "next/image";
-import { TrendingUp, TrendingDown, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 import { getTopGainersLosers } from "@/lib/coingecko.actions";
-import { formatCurrency, formatPercentage } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 
 export default function TopGainersLosers() {
 	const [activeTab, setActiveTab] = useState<"gainers" | "losers">("gainers");
@@ -34,16 +34,22 @@ export default function TopGainersLosers() {
 			<div className="w-full bg-dark-500 rounded-xl p-6 h-[380px] flex items-center justify-center border border-purple-500/10">
 				<div className="flex flex-col items-center gap-2">
 					<Loader2 className="w-8 h-8 animate-spin text-purple-400" />
-					<span className="text-sm text-purple-200/50">Loading Market Leaders...</span>
+					<span className="text-sm text-purple-200/50">
+						Loading Market Leaders...
+					</span>
 				</div>
 			</div>
 		);
 	}
 
-	const list = activeTab === "gainers" ? data?.gainers ?? [] : data?.losers ?? [];
+	const list =
+		activeTab === "gainers" ? (data?.gainers ?? []) : (data?.losers ?? []);
 
 	return (
-		<div id="top-gainers-losers" className="w-full bg-dark-500 rounded-xl p-5 border border-purple-500/10 flex flex-col justify-between h-[380px]">
+		<div
+			id="top-gainers-losers"
+			className="w-full bg-dark-500 rounded-xl p-5 border border-purple-500/10 flex flex-col justify-between h-[380px]"
+		>
 			<div>
 				{/* Tab Header */}
 				<div className="flex border-b border-purple-500/5 mb-4">

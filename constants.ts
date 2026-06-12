@@ -87,7 +87,7 @@ export const getChartConfig = (
 	},
 	localization: {
 		priceFormatter: (price: number) =>
-			"$" + price.toLocaleString(undefined, { maximumFractionDigits: 2 }),
+			`$${price.toLocaleString(undefined, { maximumFractionDigits: 2 })}`,
 	},
 });
 
@@ -114,7 +114,9 @@ export const PERIOD_BUTTONS: { value: Period; label: string }[] = [
 	{ value: "max", label: "Max" },
 ];
 
-export const LIVE_INTERVAL_BUTTONS: { value: "1s" | "1m"; label: string }[] = [
-	{ value: "1s", label: "1s" },
+export const LIVE_INTERVAL_BUTTONS = [
+	{ value: "off", label: "Off" },
+	{ value: "30s", label: "30s" },
 	{ value: "1m", label: "1m" },
-];
+	{ value: "5m", label: "5m" },
+] as const;

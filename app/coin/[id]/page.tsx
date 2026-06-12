@@ -1,11 +1,19 @@
-import React, { Suspense } from "react";
+import {
+	ArrowLeft,
+	Award,
+	BarChart2,
+	ShieldAlert,
+	TrendingDown,
+	TrendingUp,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, TrendingUp, TrendingDown, DollarSign, Award, BarChart2, ShieldAlert } from "lucide-react";
-import { fetcher } from "@/lib/coingecko.actions";
-import { formatCurrency } from "@/lib/utils";
+import { Suspense } from "react";
 import CandlestickChart from "@/components/CandlestickChart";
 import { CoinOverviewFallback } from "@/components/home/fallback";
+import WatchlistStar from "@/components/ui/WatchlistStar";
+import { fetcher } from "@/lib/coingecko.actions";
+import { formatCurrency } from "@/lib/utils";
 
 interface PageProps {
 	params: Promise<{ id: string }>;
@@ -29,7 +37,8 @@ export default async function CoinDetailPage({ params }: PageProps) {
 
 		const priceUsd = coin.market_data.current_price.usd;
 		const priceInr = coin.market_data.current_price.inr;
-		const priceChange24h = coin.market_data.price_change_percentage_24h_in_currency.usd || 0;
+		const priceChange24h =
+			coin.market_data.price_change_percentage_24h_in_currency.usd || 0;
 		const isPositive = priceChange24h >= 0;
 
 		return (
@@ -62,6 +71,7 @@ export default async function CoinDetailPage({ params }: PageProps) {
 								<span className="text-xs px-2 py-0.5 rounded bg-dark-800 text-purple-200/60 border border-purple-500/5 font-semibold">
 									Rank #{coin.market_cap_rank}
 								</span>
+								<WatchlistStar coinId={id} className="ml-1" />
 							</div>
 							<p className="text-sm text-purple-200/50 mt-1">
 								Real-time chart & analytical screening
@@ -104,16 +114,23 @@ export default async function CoinDetailPage({ params }: PageProps) {
 								Interactive Candlestick Chart
 							</h2>
 							<Suspense fallback={<CoinOverviewFallback />}>
-								<CandlestickChart data={coinOHLCData} coinId={id} height={380} />
+								<CandlestickChart
+									data={coinOHLCData}
+									coinId={id}
+									height={380}
+								/>
 							</Suspense>
 						</div>
 
 						{/* Description Section */}
 						{coin.description?.en && (
 							<div className="bg-dark-600/30 border border-purple-500/10 backdrop-blur-md p-6 rounded-2xl">
-								<h2 className="text-lg font-bold text-white mb-3">About {coin.name}</h2>
+								<h2 className="text-lg font-bold text-white mb-3">
+									About {coin.name}
+								</h2>
 								<div
 									className="text-sm text-purple-200/70 leading-relaxed space-y-4 max-h-[300px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-purple-500/10"
+									// biome-ignore lint/security/noDangerouslySetInnerHtml: Sanitized coin description from CoinGecko
 									dangerouslySetInnerHTML={{
 										__html: coin.description.en.replace(
 											/<a\b[^>]*>(.*?)<\/a>/gi,
@@ -135,39 +152,52 @@ export default async function CoinDetailPage({ params }: PageProps) {
 
 							<div className="space-y-4">
 								<div className="flex justify-between items-center py-2.5 border-b border-purple-500/5">
-									<span className="text-sm text-purple-200/50">Market Capitalization</span>
+									<span className="text-sm text-purple-200/50">
+										Market Capitalization
+									</span>
 									<span className="text-sm font-semibold text-white">
 										${coin.market_data.market_cap.usd.toLocaleString()}
 									</span>
 								</div>
 
 								<div className="flex justify-between items-center py-2.5 border-b border-purple-500/5">
-									<span className="text-sm text-purple-200/50">24h Trading Volume</span>
+									<span className="text-sm text-purple-200/50">
+										24h Trading Volume
+									</span>
 									<span className="text-sm font-semibold text-white">
 										${coin.market_data.total_volume.usd.toLocaleString()}
 									</span>
 								</div>
 
 								<div className="flex justify-between items-center py-2.5 border-b border-purple-500/5">
-									<span className="text-sm text-purple-200/50">24h High / Low</span>
+									<span className="text-sm text-purple-200/50">
+										24h High / Low
+									</span>
 									<span className="text-sm font-semibold text-white">
-										${coin.market_data.high_24h?.usd?.toLocaleString() ?? "N/A"} / $
+										${coin.market_data.high_24h?.usd?.toLocaleString() ?? "N/A"}{" "}
+										/ $
 										{coin.market_data.low_24h?.usd?.toLocaleString() ?? "N/A"}
 									</span>
 								</div>
 
 								<div className="flex justify-between items-center py-2.5 border-b border-purple-500/5">
-									<span className="text-sm text-purple-200/50">Circulating Supply</span>
+									<span className="text-sm text-purple-200/50">
+										Circulating Supply
+									</span>
 									<span className="text-sm font-semibold text-white">
-										{coin.market_data.circulating_supply?.toLocaleString()} {coin.symbol.toUpperCase()}
+										{coin.market_data.circulating_supply?.toLocaleString()}{" "}
+										{coin.symbol.toUpperCase()}
 									</span>
 								</div>
 
 								{coin.market_data.max_supply && (
 									<div className="flex justify-between items-center py-2.5 border-b border-purple-500/5">
-										<span className="text-sm text-purple-200/50">Max Supply</span>
+										<span className="text-sm text-purple-200/50">
+											Max Supply
+										</span>
 										<span className="text-sm font-semibold text-white">
-											{coin.market_data.max_supply.toLocaleString()} {coin.symbol.toUpperCase()}
+											{coin.market_data.max_supply.toLocaleString()}{" "}
+											{coin.symbol.toUpperCase()}
 										</span>
 									</div>
 								)}
@@ -178,9 +208,13 @@ export default async function CoinDetailPage({ params }: PageProps) {
 						<div className="p-5 rounded-2xl bg-amber-500/5 border border-amber-500/20 flex gap-3 text-amber-200/80">
 							<ShieldAlert className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
 							<div>
-								<h4 className="text-sm font-semibold text-amber-200">Risk Disclaimer</h4>
+								<h4 className="text-sm font-semibold text-amber-200">
+									Risk Disclaimer
+								</h4>
 								<p className="text-xs leading-relaxed mt-1">
-									Cryptocurrency trading involves high risk. Volatile market conditions can result in rapid financial loss. Perform your own detailed analysis.
+									Cryptocurrency trading involves high risk. Volatile market
+									conditions can result in rapid financial loss. Perform your
+									own detailed analysis.
 								</p>
 							</div>
 						</div>
@@ -193,9 +227,12 @@ export default async function CoinDetailPage({ params }: PageProps) {
 		return (
 			<main className="main-container max-w-7xl mx-auto px-4 py-16 flex flex-col items-center justify-center text-center">
 				<ShieldAlert className="w-16 h-16 text-purple-500 mb-4 animate-bounce" />
-				<h1 className="text-2xl font-bold text-white">Failed to Load Coin Details</h1>
+				<h1 className="text-2xl font-bold text-white">
+					Failed to Load Coin Details
+				</h1>
 				<p className="text-sm text-purple-200/60 max-w-md mt-2">
-					CoinGecko API might be heavily rate-limited. Please return to the homepage screener or try again shortly.
+					CoinGecko API might be heavily rate-limited. Please return to the
+					homepage screener or try again shortly.
 				</p>
 				<Link
 					href="/"

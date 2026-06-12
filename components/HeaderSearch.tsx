@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { Search, Loader2, X } from "lucide-react";
-import { searchCoins } from "@/lib/coingecko.actions";
+import { Loader2, Search, X } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { searchCoins } from "@/lib/coingecko.actions";
 import { formatPercentage } from "@/lib/utils";
 
 export default function HeaderSearch() {
@@ -136,10 +136,11 @@ export default function HeaderSearch() {
 								const hasChange = change24h !== undefined && change24h !== null;
 
 								return (
-									<div
+									<button
 										key={coin.id}
+										type="button"
 										onClick={() => handleSelect(coin.id)}
-										className="search-item px-3 py-2.5 rounded-lg flex items-center justify-between hover:bg-purple-600/10 cursor-pointer transition-all"
+										className="search-item w-full text-left bg-transparent border-none focus:outline-none px-3 py-2.5 rounded-lg flex items-center justify-between hover:bg-purple-600/10 cursor-pointer transition-all"
 									>
 										<div className="coin-info flex items-center gap-3">
 											<Image
@@ -181,7 +182,7 @@ export default function HeaderSearch() {
 												</span>
 											)}
 										</div>
-									</div>
+									</button>
 								);
 							})}
 						</div>

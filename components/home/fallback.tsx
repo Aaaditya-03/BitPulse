@@ -1,6 +1,4 @@
-import React from "react";
 import DataTable from "@/components/DataTable";
-import { cn } from "@/lib/utils";
 
 /**
  * A fallback skeleton component for the CoinOverview, displayed while data is loading.
@@ -28,8 +26,9 @@ export const CoinOverviewFallback = () => {
  * @returns The TrendingCoinsFallback component.
  */
 export const TrendingCoinsFallback = () => {
-	const columns = [
+	const columns: DataTableColumn<{ id: number }>[] = [
 		{
+			key: "name",
 			header: "Name",
 			cell: () => (
 				<div className="name-link">
@@ -39,6 +38,7 @@ export const TrendingCoinsFallback = () => {
 			),
 		},
 		{
+			key: "change",
 			header: "24h Change",
 			cell: () => (
 				<div className="price-change">
@@ -48,6 +48,7 @@ export const TrendingCoinsFallback = () => {
 			),
 		},
 		{
+			key: "price",
 			header: "Price",
 			cell: () => <div className="price-line skeleton" />,
 		},
@@ -60,8 +61,8 @@ export const TrendingCoinsFallback = () => {
 			<h4>Trending Coins</h4>
 			<DataTable
 				data={dummyData}
-				columns={columns as any}
-				rowKey={(item: any) => item.id}
+				columns={columns}
+				rowKey={(item) => item.id}
 				tableClassName="trending-coins-table"
 			/>
 		</div>
@@ -73,13 +74,15 @@ export const TrendingCoinsFallback = () => {
  * @returns The CategoriesFallback component.
  */
 export const CategoriesFallback = () => {
-	const columns = [
+	const columns: DataTableColumn<{ id: number }>[] = [
 		{
+			key: "category",
 			header: "Category",
 			cellClassName: "category-cell",
 			cell: () => <div className="category-line skeleton" />,
 		},
 		{
+			key: "top_gainers",
 			header: "Top Gainers",
 			cellClassName: "top-gainers-cell",
 			cell: () => (
@@ -91,6 +94,7 @@ export const CategoriesFallback = () => {
 			),
 		},
 		{
+			key: "change",
 			header: "24h Change",
 			cellClassName: "change-header-cell",
 			cell: () => (
@@ -101,11 +105,13 @@ export const CategoriesFallback = () => {
 			),
 		},
 		{
+			key: "market_cap",
 			header: "Market Cap",
 			cellClassName: "market-cap-cell",
 			cell: () => <div className="value-skeleton-lg skeleton" />,
 		},
 		{
+			key: "volume",
 			header: "24h Volume",
 			cellClassName: "volume-cell",
 			cell: () => <div className="value-skeleton-md skeleton" />,
@@ -119,8 +125,8 @@ export const CategoriesFallback = () => {
 			<h4>Top Categories</h4>
 			<DataTable
 				data={dummyData}
-				columns={columns as any}
-				rowKey={(item: any) => item.id}
+				columns={columns}
+				rowKey={(item) => item.id}
 				tableClassName="mt-3"
 			/>
 		</div>
