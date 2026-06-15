@@ -8,7 +8,13 @@ import { getWatchlistCoins } from "@/lib/coingecko.actions";
 import { cn, formatCurrency } from "@/lib/utils";
 import WatchlistStar from "../ui/WatchlistStar";
 
-export default function WatchlistWidget() {
+interface WatchlistWidgetProps {
+	height?: number;
+}
+
+export default function WatchlistWidget({
+	height = 260,
+}: WatchlistWidgetProps) {
 	const [coins, setCoins] = useState<CoinMarketData[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [watchlistIds, setWatchlistIds] = useState<string[]>([]);
@@ -53,7 +59,10 @@ export default function WatchlistWidget() {
 
 	if (isLoading) {
 		return (
-			<div className="w-full bg-dark-500 rounded-xl p-5 border border-purple-500/10 h-[260px] flex items-center justify-center">
+			<div
+				className="w-full bg-dark-500 rounded-xl p-5 border border-purple-500/10 flex items-center justify-center animate-pulse"
+				style={{ height: `${height}px` }}
+			>
 				<div className="flex flex-col items-center gap-2">
 					<Loader2 className="w-6 h-6 animate-spin text-purple-400" />
 					<span className="text-xs text-purple-200/50">
@@ -67,7 +76,8 @@ export default function WatchlistWidget() {
 	return (
 		<div
 			id="watchlist-widget"
-			className="w-full bg-dark-500 rounded-xl p-5 border border-purple-500/10 flex flex-col h-[260px] overflow-hidden justify-between animate-in fade-in duration-300"
+			className="w-full bg-dark-500 rounded-xl p-5 border border-purple-500/10 flex flex-col overflow-hidden justify-between animate-in fade-in duration-300"
+			style={{ height: `${height}px` }}
 		>
 			<div className="h-full flex flex-col overflow-hidden">
 				<h4 className="text-sm font-semibold tracking-wider text-purple-100 flex items-center gap-2 mb-3 shrink-0">
@@ -76,12 +86,23 @@ export default function WatchlistWidget() {
 				</h4>
 
 				{watchlistIds.length === 0 ? (
-					<div className="flex-1 flex flex-col items-center justify-center text-center p-4">
-						<span className="text-xs text-purple-200/40 leading-relaxed">
-							Your watchlist is empty.
-							<br />
-							Star coins to monitor prices live.
-						</span>
+					<div className="flex-1 flex flex-col justify-center gap-3 py-1">
+						<div className="flex items-center justify-between opacity-30">
+							<div className="flex items-center gap-2.5">
+								<div className="w-6 h-6 rounded-full bg-purple-500/20 skeleton shrink-0" />
+								<div className="flex flex-col gap-1.5">
+									<div className="w-16 h-3 bg-purple-500/20 rounded-sm skeleton" />
+									<div className="w-8 h-2 bg-purple-500/20 rounded-sm skeleton" />
+								</div>
+							</div>
+							<div className="flex items-center gap-3">
+								<div className="flex flex-col items-end gap-1.5">
+									<div className="w-12 h-3 bg-purple-500/20 rounded-sm skeleton" />
+									<div className="w-8 h-2 bg-purple-500/20 rounded-sm skeleton" />
+								</div>
+								<div className="w-7 h-7 bg-purple-500/20 rounded-lg skeleton" />
+							</div>
+						</div>
 					</div>
 				) : (
 					<div className="flex-1 overflow-y-auto space-y-2.5 pr-1 scrollbar-thin scrollbar-thumb-purple-500/10">

@@ -160,7 +160,9 @@ export function calculateSMA(
 		}
 		// Auto-detect milliseconds vs seconds
 		const rawTime = data[i][0];
-		const timestamp = (rawTime > 1e11 ? Math.floor(rawTime / 1000) : rawTime) as Time;
+		const timestamp = (
+			rawTime > 1e11 ? Math.floor(rawTime / 1000) : rawTime
+		) as Time;
 		sma.push({ time: timestamp, value: sum / period });
 	}
 	return sma;
@@ -180,14 +182,18 @@ export function calculateEMA(
 	let prevEma = data[0][4]; // Initial seed is first close
 
 	const firstRawTime = data[0][0];
-	const firstTimestamp = (firstRawTime > 1e11 ? Math.floor(firstRawTime / 1000) : firstRawTime) as Time;
+	const firstTimestamp = (
+		firstRawTime > 1e11 ? Math.floor(firstRawTime / 1000) : firstRawTime
+	) as Time;
 	ema.push({ time: firstTimestamp, value: prevEma });
 
 	for (let i = 1; i < data.length; i++) {
 		const close = data[i][4];
 		const currentEma = close * alpha + prevEma * (1 - alpha);
 		const rawTime = data[i][0];
-		const timestamp = (rawTime > 1e11 ? Math.floor(rawTime / 1000) : rawTime) as Time;
+		const timestamp = (
+			rawTime > 1e11 ? Math.floor(rawTime / 1000) : rawTime
+		) as Time;
 		ema.push({ time: timestamp, value: currentEma });
 		prevEma = currentEma;
 	}

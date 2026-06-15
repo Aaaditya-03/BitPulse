@@ -356,101 +356,24 @@ const CandlestickChart = ({
 
 	return (
 		<div id="candlestick-chart">
-			<div className="chart-header flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
-				<div className="flex-1">{children}</div>
+			<div className="chart-header flex flex-row gap-4 justify-between items-center mb-4">
+				<div className="flex-1 min-w-0">{children}</div>
 
-				<div className="flex flex-wrap items-center gap-3">
-					{/* Indicators Toggles */}
-					<div className="button-group flex items-center gap-1.5 bg-dark-500/40 p-1 rounded-xl border border-purple-500/5">
-						<span className="text-[11px] font-semibold text-purple-200/40 uppercase tracking-wider px-2">
-							Indicators
-						</span>
+				{/* Timeline Selector (to the side) */}
+				<div className="button-group flex items-center gap-1 bg-dark-500/40 p-1 rounded-xl border border-purple-500/5 shrink-0">
+					{PERIOD_BUTTONS.map(({ value, label }) => (
 						<button
+							key={value}
 							type="button"
 							className={
-								indicators.sma9 ? "config-button-active" : "config-button"
+								period === value ? "config-button-active" : "config-button"
 							}
-							onClick={() =>
-								setIndicators((prev) => ({ ...prev, sma9: !prev.sma9 }))
-							}
+							onClick={() => handlePeriodChange(value)}
+							disabled={isPending}
 						>
-							SMA 9
+							{label}
 						</button>
-						<button
-							type="button"
-							className={
-								indicators.sma21 ? "config-button-active" : "config-button"
-							}
-							onClick={() =>
-								setIndicators((prev) => ({ ...prev, sma21: !prev.sma21 }))
-							}
-						>
-							SMA 21
-						</button>
-						<button
-							type="button"
-							className={
-								indicators.ema9 ? "config-button-active" : "config-button"
-							}
-							onClick={() =>
-								setIndicators((prev) => ({ ...prev, ema9: !prev.ema9 }))
-							}
-						>
-							EMA 9
-						</button>
-						<button
-							type="button"
-							className={
-								indicators.ema21 ? "config-button-active" : "config-button"
-							}
-							onClick={() =>
-								setIndicators((prev) => ({ ...prev, ema21: !prev.ema21 }))
-							}
-						>
-							EMA 21
-						</button>
-					</div>
-
-					{/* Period buttons */}
-					<div className="button-group flex items-center gap-1 bg-dark-500/40 p-1 rounded-xl border border-purple-500/5">
-						{PERIOD_BUTTONS.map(({ value, label }) => (
-							<button
-								key={value}
-								type="button"
-								className={
-									period === value ? "config-button-active" : "config-button"
-								}
-								onClick={() => handlePeriodChange(value)}
-								disabled={isPending}
-							>
-								{label}
-							</button>
-						))}
-					</div>
-
-					{/* Live polling selector */}
-					<div className="button-group flex items-center gap-1.5 bg-dark-500/40 p-1 rounded-xl border border-purple-500/5">
-						{localLiveInterval !== "off" && (
-							<span className="flex items-center gap-1.5 text-[10px] text-green-400 font-semibold px-2 py-0.5 bg-green-500/10 rounded-lg animate-pulse shrink-0">
-								<span className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-md shadow-green-500/50" />
-								Live
-							</span>
-						)}
-						{LIVE_INTERVAL_BUTTONS.map(({ value, label }) => (
-							<button
-								key={value}
-								type="button"
-								className={
-									localLiveInterval === value
-										? "config-button-active"
-										: "config-button"
-								}
-								onClick={() => setLocalLiveInterval(value)}
-							>
-								{label}
-							</button>
-						))}
-					</div>
+					))}
 				</div>
 			</div>
 
@@ -461,6 +384,84 @@ const CandlestickChart = ({
 			/>
 
 			<div ref={chartContainerRef} className="chart mt-2" style={{ height }} />
+
+			{/* Bottom controls: Indicators and Live Polling */}
+			<div className="flex flex-wrap items-center justify-between gap-4 mt-4 pt-4 border-t border-purple-500/5">
+				{/* Indicators Toggles */}
+				<div className="button-group flex items-center gap-1.5 bg-dark-500/40 p-1 rounded-xl border border-purple-500/5">
+					<span className="text-[11px] font-semibold text-purple-200/40 uppercase tracking-wider px-2">
+						Indicators
+					</span>
+					<button
+						type="button"
+						className={
+							indicators.sma9 ? "config-button-active" : "config-button"
+						}
+						onClick={() =>
+							setIndicators((prev) => ({ ...prev, sma9: !prev.sma9 }))
+						}
+					>
+						SMA 9
+					</button>
+					<button
+						type="button"
+						className={
+							indicators.sma21 ? "config-button-active" : "config-button"
+						}
+						onClick={() =>
+							setIndicators((prev) => ({ ...prev, sma21: !prev.sma21 }))
+						}
+					>
+						SMA 21
+					</button>
+					<button
+						type="button"
+						className={
+							indicators.ema9 ? "config-button-active" : "config-button"
+						}
+						onClick={() =>
+							setIndicators((prev) => ({ ...prev, ema9: !prev.ema9 }))
+						}
+					>
+						EMA 9
+					</button>
+					<button
+						type="button"
+						className={
+							indicators.ema21 ? "config-button-active" : "config-button"
+						}
+						onClick={() =>
+							setIndicators((prev) => ({ ...prev, ema21: !prev.ema21 }))
+						}
+					>
+						EMA 21
+					</button>
+				</div>
+
+				{/* Live polling selector */}
+				<div className="button-group flex items-center gap-1.5 bg-dark-500/40 p-1 rounded-xl border border-purple-500/5">
+					{localLiveInterval !== "off" && (
+						<span className="flex items-center gap-1.5 text-[10px] text-green-400 font-semibold px-2 py-0.5 bg-green-500/10 rounded-lg animate-pulse shrink-0">
+							<span className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-md shadow-green-500/50" />
+							Live
+						</span>
+					)}
+					{LIVE_INTERVAL_BUTTONS.map(({ value, label }) => (
+						<button
+							key={value}
+							type="button"
+							className={
+								localLiveInterval === value
+									? "config-button-active"
+									: "config-button"
+							}
+							onClick={() => setLocalLiveInterval(value)}
+						>
+							{label}
+						</button>
+					))}
+				</div>
+			</div>
 		</div>
 	);
 };

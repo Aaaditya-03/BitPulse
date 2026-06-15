@@ -336,7 +336,7 @@
 	}
 
 	#trending-coins {
-		@apply w-full flex flex-col justify-center h-full py-4 bg-dark-500 rounded-xl;
+		@apply w-full flex flex-col justify-center h-full py-4 bg-dark-500 rounded-xl border border-purple-500/10 hover:border-purple-500/20 transition-all duration-300;
 
 		h4 {
 			@apply text-xl md:text-2xl font-semibold mb-2 px-5;
@@ -346,17 +346,17 @@
 			@apply bg-dark-500 overflow-hidden;
 
 			.name-cell {
-				@apply font-bold;
+				@apply font-bold min-w-0;
 
 				a {
-					@apply pl-1 md:pl-2 py-1 md:py-2 xl:py-1 flex items-center gap-2 md:gap-3;
+					@apply pl-1 md:pl-2 py-1 md:py-2 xl:py-1 flex items-center gap-2 md:gap-3 min-w-0;
 
 					img {
-						@apply rounded-full size-8 md:size-9;
+						@apply rounded-full size-8 md:size-9 shrink-0;
 					}
 
 					p {
-						@apply text-sm md:text-base;
+						@apply text-sm md:text-base truncate max-w-[120px] sm:max-w-[200px] md:max-w-[320px] lg:max-w-[480px] xl:max-w-[600px];
 					}
 				}
 			}
@@ -463,7 +463,7 @@
 		}
 
 		.chart {
-			@apply h-90;
+			height: 400px;
 		}
 
 		.chart-skeleton {
@@ -780,7 +780,7 @@
 	}
 
 	#top-gainers-losers {
-		@apply mt-8 w-full;
+		@apply w-full;
 
 		.tabs-list {
 			@apply size-full! p-1! bg-transparent! border-b! border-dark-500! rounded-none!;
@@ -830,30 +830,6 @@
 
 				.value {
 					@apply flex gap-1 flex-1 items-end text-base font-medium;
-				}
-			}
-		}
-	}
-
-	#coin-overview {
-		@apply w-full h-full xl:col-span-2 px-2 bg-dark-500 rounded-xl;
-
-		.header {
-			@apply flex-1 mb-2 flex gap-2 md:gap-3;
-
-			img {
-				@apply w-10 h-10 md:w-14 md:h-14;
-			}
-
-			.info {
-				@apply flex flex-col;
-
-				p {
-					@apply flex text-purple-100 text-xs md:text-sm w-fit;
-				}
-
-				h1 {
-					@apply text-xl md:text-2xl font-semibold;
 				}
 			}
 		}

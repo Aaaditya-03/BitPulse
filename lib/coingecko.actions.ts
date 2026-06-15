@@ -170,13 +170,13 @@ export async function getTopGainersLosers(): Promise<{
 			.sort(
 				(a, b) => b.price_change_percentage_24h - a.price_change_percentage_24h,
 			)
-			.slice(0, 5);
+			.slice(0, 10);
 
 		const losers = [...sorted]
 			.sort(
 				(a, b) => a.price_change_percentage_24h - b.price_change_percentage_24h,
 			)
-			.slice(0, 5);
+			.slice(0, 10);
 
 		return { gainers, losers };
 	} catch (error) {

@@ -6,10 +6,9 @@ import {
 	CoinOverviewFallback,
 	TrendingCoinsFallback,
 } from "@/components/home/fallback";
+import HomeSidebar from "@/components/home/HomeSidebar";
 import MarketStatsBar from "@/components/home/MarketStatsBar";
-import TopGainersLosers from "@/components/home/TopGainersLosers";
 import TrendingCoins from "@/components/home/TrendingCoins";
-import WatchlistWidget from "@/components/home/WatchlistWidget";
 
 /**
  * The main landing page of the application, rendering key widgets and overviews.
@@ -48,35 +47,14 @@ const Page = async () => {
 				</div>
 
 				{/* Sidebar stack (1/3 width on desktop) */}
-				<div className="flex flex-col gap-8">
-					<Suspense
-						fallback={
-							<div className="w-full bg-dark-500 rounded-xl p-5 border border-purple-500/10 h-[260px] animate-pulse flex items-center justify-center">
-								<span className="text-xs text-purple-200/30">
-									Loading Watchlist...
-								</span>
-							</div>
-						}
-					>
-						<WatchlistWidget />
-					</Suspense>
+				<HomeSidebar />
+			</section>
 
-					<Suspense fallback={<TrendingCoinsFallback />}>
-						<TrendingCoins />
-					</Suspense>
-
-					<Suspense
-						fallback={
-							<div className="w-full bg-dark-500 rounded-xl p-6 h-[380px] flex items-center justify-center border border-purple-500/10 animate-pulse">
-								<span className="text-sm text-purple-200/50">
-									Loading leaders...
-								</span>
-							</div>
-						}
-					>
-						<TopGainersLosers />
-					</Suspense>
-				</div>
+			{/* Trending Coins (Full Width) */}
+			<section className="w-full">
+				<Suspense fallback={<TrendingCoinsFallback />}>
+					<TrendingCoins />
+				</Suspense>
 			</section>
 
 			{/* Bottom: Asset Categories */}
