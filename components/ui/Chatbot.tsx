@@ -659,8 +659,13 @@ function parseMarkdown(text: string) {
 		}
 
 		if (block.type === "heading") {
-			const HeadingTag =
-				`h${Math.min(6, block.level || 3)}` as "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
+			const HeadingTag = `h${Math.min(6, block.level || 3)}` as
+				| "h1"
+				| "h2"
+				| "h3"
+				| "h4"
+				| "h5"
+				| "h6";
 			const classNames =
 				block.level === 1
 					? "text-base font-bold text-white mt-4 mb-2 pb-1 border-b border-purple-500/20"
@@ -741,67 +746,82 @@ function parseInlineMarkdown(text: string): React.ReactNode {
 
 	return parts.map((part, index) => {
 		if (part.type === "link" && part.url) {
-			const isExternal =
-				part.url.startsWith("http") || part.url.startsWith("//");
-			return (
-				<a
-					// biome-ignore lint/suspicious/noArrayIndexKey: stable index
-					key={index}
-					href={part.url}
-					target={isExternal ? "_blank" : undefined}
-					rel={isExternal ? "noopener noreferrer" : undefined}
-					className="text-purple-400 hover:text-purple-300 hover:underline inline-flex items-center gap-0.5 transition-colors font-medium"
-				>
-					{part.text}
-					{isExternal && (
-						<ExternalLink className="w-3 h-3 text-purple-400/60 inline" />
-					)}
-				</a>
-			);
+			const isSafe =
+				part.url.startsWith("http://") ||
+				part.url.startsWith("https://") ||
+				(part.url.startsWith("/") && !part.url.startsWith("//"));
+
+			if (isSafe) {
+				const isExternal =
+					part.url.startsWith("http://") || part.url.startsWith("https://");
+				return (
+					<a
+						// biome-ignore lint/suspicious/noArrayIndexKey: stable index
+						key={index}
+						href={part.url}
+						target={isExternal ? "_blank" : undefined}
+						rel={isExternal ? "noopener noreferrer" : undefined}
+						className="text-purple-400 hover:text-purple-300 hover:underline inline-flex items-center gap-0.5 transition-colors font-medium"
+					>
+						{part.text}
+						{isExternal && (
+							<ExternalLink className="w-3 h-3 text-purple-400/60 inline" />
+						)}
+					</a>
+				);
+			}
+
+			// For unsafe URL schemes, render as plain text
+			return `[${part.text}](${part.url})`;
 		}
 
 		const formatText = part.text;
-		const boldParts = formatText.split(/(\*\*.*?\*\*)/g);
-		return boldParts.map((bPart, bIndex) => {
-			const bKey = `${index}-${bIndex}`;
-			if (bPart.startsWith("**") && bPart.endsWith("**")) {
-				const innerBold = bPart.substring(2, bPart.length - 2);
+		const codeParts = formatText.split(/(`.*?`)/g);
+		return codeParts.map((cPart, cIndex) => {
+			const cKey = `${index}-${cIndex}`;
+			if (cPart.startsWith("`") && cPart.endsWith("`")) {
 				return (
-					<strong key={bKey} className="font-bold text-white">
-						{parseDeepInline(innerBold, bKey)}
-					</strong>
+					<code
+						key={cKey}
+						className="px-1 py-0.5 rounded bg-purple-950/60 border border-purple-500/20 text-purple-300 font-mono text-[11px]"
+					>
+						{cPart.substring(1, cPart.length - 1)}
+					</code>
 				);
 			}
-			return parseDeepInline(bPart, bKey);
+
+			const boldParts = cPart.split(/(\*\*.*?\*\*)/g);
+			return boldParts.map((bPart, bIndex) => {
+				const bKey = `${cKey}-${bIndex}`;
+				if (
+					bPart.startsWith("**") &&
+					bPart.endsWith("**") &&
+					bPart.length >= 4
+				) {
+					const innerBold = bPart.substring(2, bPart.length - 2);
+					return (
+						<strong key={bKey} className="font-bold text-white">
+							{parseItalics(innerBold, bKey)}
+						</strong>
+					);
+				}
+				return parseItalics(bPart, bKey);
+			});
 		});
 	});
 }
 
-function parseDeepInline(text: string, parentKey: string): React.ReactNode {
-	const codeParts = text.split(/(`.*?`)/g);
-	return codeParts.map((cPart, cIndex) => {
-		const cKey = `${parentKey}-${cIndex}`;
-		if (cPart.startsWith("`") && cPart.endsWith("`")) {
+function parseItalics(text: string, parentKey: string): React.ReactNode {
+	const italicParts = text.split(/(\*.*?\*)/g);
+	return italicParts.map((iPart, iIndex) => {
+		const iKey = `${parentKey}-${iIndex}`;
+		if (iPart.startsWith("*") && iPart.endsWith("*") && iPart.length >= 2) {
 			return (
-				<code
-					key={cKey}
-					className="px-1 py-0.5 rounded bg-purple-950/60 border border-purple-500/20 text-purple-300 font-mono text-[11px]"
-				>
-					{cPart.substring(1, cPart.length - 1)}
-				</code>
+				<em key={iKey} className="italic text-purple-200/90 font-serif">
+					{iPart.substring(1, iPart.length - 1)}
+				</em>
 			);
 		}
-		const italicParts = cPart.split(/(\*.*?\*)/g);
-		return italicParts.map((iPart, iIndex) => {
-			const iKey = `${cKey}-${iIndex}`;
-			if (iPart.startsWith("*") && iPart.endsWith("*")) {
-				return (
-					<em key={iKey} className="italic text-purple-200/90 font-serif">
-						{iPart.substring(1, iPart.length - 1)}
-					</em>
-				);
-			}
-			return iPart;
-		});
+		return iPart;
 	});
 }
