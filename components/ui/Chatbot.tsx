@@ -3,7 +3,11 @@
 import {
 	ArrowRight,
 	Bot,
+	Check,
+	Copy,
+	ExternalLink,
 	MessageSquare,
+	Quote,
 	Send,
 	Settings,
 	Sparkles,
@@ -234,14 +238,14 @@ export default function Chatbot() {
 									<div
 										// biome-ignore lint/suspicious/noArrayIndexKey: indices are stable since messages are only appended
 										key={index}
-										className={`flex gap-2.5 max-w-[85%] ${
+										className={`flex gap-2.5 max-w-[85%] animate-in fade-in slide-in-from-bottom-2 duration-300 ${
 											msg.role === "user" ? "ml-auto flex-row-reverse" : ""
 										}`}
 									>
 										<div
-											className={`w-7 h-7 rounded-full flex items-center justify-center text-xs shrink-0 ${
+											className={`w-7 h-7 rounded-full flex items-center justify-center text-xs shrink-0 shadow-md ${
 												msg.role === "user"
-													? "bg-purple-600 text-white"
+													? "bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-purple-500/10"
 													: "bg-dark-800 border border-purple-500/10 text-purple-300"
 											}`}
 										>
@@ -252,13 +256,13 @@ export default function Chatbot() {
 											)}
 										</div>
 										<div
-											className={`px-3.5 py-2.5 rounded-2xl text-[13px] leading-relaxed whitespace-pre-line ${
+											className={`px-3.5 py-2.5 rounded-2xl text-[13px] leading-relaxed shadow-lg ${
 												msg.role === "user"
-													? "bg-purple-600/90 text-white rounded-tr-none shadow-sm shadow-purple-600/10"
-													: "bg-dark-800 border border-purple-500/5 text-purple-100 rounded-tl-none"
+													? "bg-gradient-to-br from-purple-600 to-indigo-650 text-white rounded-tr-none border border-purple-500/20 shadow-purple-600/10"
+													: "bg-dark-800/85 backdrop-blur-sm border border-purple-500/15 hover:border-purple-500/30 text-purple-100 rounded-tl-none transition-all duration-300"
 											}`}
 										>
-											{msg.content}
+											{parseMarkdown(msg.content)}
 										</div>
 									</div>
 								))}
@@ -351,4 +355,473 @@ export default function Chatbot() {
 			</button>
 		</div>
 	);
+}
+
+// A custom CodeBlock component with copy to clipboard functionality
+interface CodeBlockProps {
+	code: string;
+	language?: string;
+}
+
+function CodeBlock({ code, language }: CodeBlockProps) {
+	const [copied, setCopied] = useState(false);
+
+	const handleCopy = () => {
+		navigator.clipboard.writeText(code);
+		setCopied(true);
+		setTimeout(() => setCopied(false), 2000);
+	};
+
+	return (
+		<div className="my-3 rounded-xl bg-purple-950/40 border border-purple-500/10 overflow-hidden font-mono text-[11px] leading-relaxed">
+			<div className="flex items-center justify-between px-4 py-1.5 bg-purple-950/60 border-b border-purple-500/10 text-[10px] text-purple-300 font-sans font-medium uppercase tracking-wider select-none">
+				<span>{language || "code"}</span>
+				<button
+					onClick={handleCopy}
+					className="flex items-center gap-1 text-purple-400 hover:text-purple-200 transition-colors cursor-pointer"
+					type="button"
+				>
+					{copied ? (
+						<>
+							<Check className="w-3 h-3" />
+							<span>Copied!</span>
+						</>
+					) : (
+						<>
+							<Copy className="w-3 h-3" />
+							<span>Copy</span>
+						</>
+					)}
+				</button>
+			</div>
+			<pre className="p-4 overflow-x-auto scrollbar-thin scrollbar-thumb-purple-500/10 whitespace-pre">
+				<code className="text-purple-100">{code}</code>
+			</pre>
+		</div>
+	);
+}
+
+interface MarkdownBlock {
+	type: "paragraph" | "heading" | "list" | "blockquote" | "code" | "table";
+	content?: string;
+	listItems?: string[];
+	listType?: "ordered" | "unordered";
+	level?: number;
+	language?: string;
+	tableHeaders?: string[];
+	tableRows?: string[][];
+}
+
+function parseMarkdownToBlocks(text: string): MarkdownBlock[] {
+	const lines = text.split("\n");
+	const blocks: MarkdownBlock[] = [];
+	let i = 0;
+
+	while (i < lines.length) {
+		const line = lines[i];
+
+		// 1. Code Block
+		if (line.trim().startsWith("```")) {
+			const lang = line.trim().substring(3).trim();
+			const codeLines: string[] = [];
+			i++;
+			while (i < lines.length && !lines[i].trim().startsWith("```")) {
+				codeLines.push(lines[i]);
+				i++;
+			}
+			// Skip the closing ```
+			if (i < lines.length) i++;
+			blocks.push({
+				type: "code",
+				content: codeLines.join("\n"),
+				language: lang || "code",
+			});
+			continue;
+		}
+
+		// 2. Blockquotes
+		if (line.trim().startsWith(">")) {
+			const quoteLines: string[] = [];
+			while (i < lines.length && lines[i].trim().startsWith(">")) {
+				quoteLines.push(lines[i].trim().replace(/^>\s*/, ""));
+				i++;
+			}
+			blocks.push({
+				type: "blockquote",
+				content: quoteLines.join("\n"),
+			});
+			continue;
+		}
+
+		// 3. Tables
+		if (line.trim().startsWith("|") && line.trim().endsWith("|")) {
+			const rawRows: string[][] = [];
+			while (
+				i < lines.length &&
+				lines[i].trim().startsWith("|") &&
+				lines[i].trim().endsWith("|")
+			) {
+				const cells = lines[i]
+					.trim()
+					.split("|")
+					.slice(1, -1)
+					.map((c) => c.trim());
+				rawRows.push(cells);
+				i++;
+			}
+
+			const filteredRows = rawRows.filter((row) => {
+				return !row.every((cell) => cell.match(/^-+$/) || cell === "");
+			});
+
+			if (filteredRows.length > 0) {
+				const headers = filteredRows[0];
+				const rows = filteredRows.slice(1);
+				blocks.push({
+					type: "table",
+					tableHeaders: headers,
+					tableRows: rows,
+				});
+			}
+			continue;
+		}
+
+		// 4. Headings
+		if (line.trim().startsWith("#")) {
+			const match = line.trim().match(/^(#{1,6})\s+(.*)$/);
+			if (match) {
+				blocks.push({
+					type: "heading",
+					level: match[1].length,
+					content: match[2],
+				});
+				i++;
+				continue;
+			}
+		}
+
+		// 5. Unordered List Items
+		if (line.trim().startsWith("* ") || line.trim().startsWith("- ")) {
+			const items: string[] = [];
+			while (
+				i < lines.length &&
+				(lines[i].trim().startsWith("* ") || lines[i].trim().startsWith("- "))
+			) {
+				items.push(lines[i].trim().replace(/^[*-]\s*/, ""));
+				i++;
+			}
+			blocks.push({
+				type: "list",
+				listType: "unordered",
+				listItems: items,
+			});
+			continue;
+		}
+
+		// 6. Ordered List Items
+		if (line.trim().match(/^\d+\.\s+/)) {
+			const items: string[] = [];
+			while (i < lines.length && lines[i].trim().match(/^\d+\.\s+/)) {
+				items.push(lines[i].trim().replace(/^\d+\.\s*/, ""));
+				i++;
+			}
+			blocks.push({
+				type: "list",
+				listType: "ordered",
+				listItems: items,
+			});
+			continue;
+		}
+
+		// 7. Paragraph or blank line
+		if (line.trim() === "") {
+			i++;
+			continue;
+		}
+
+		const paragraphLines: string[] = [];
+		while (
+			i < lines.length &&
+			lines[i].trim() !== "" &&
+			!lines[i].trim().startsWith("```") &&
+			!lines[i].trim().startsWith(">") &&
+			!(lines[i].trim().startsWith("|") && lines[i].trim().endsWith("|")) &&
+			!lines[i].trim().startsWith("#") &&
+			!lines[i].trim().startsWith("* ") &&
+			!lines[i].trim().startsWith("- ") &&
+			!lines[i].trim().match(/^\d+\.\s+/)
+		) {
+			paragraphLines.push(lines[i]);
+			i++;
+		}
+
+		blocks.push({
+			type: "paragraph",
+			content: paragraphLines.join("\n"),
+		});
+	}
+
+	return blocks;
+}
+
+function parseMarkdown(text: string) {
+	const blocks = parseMarkdownToBlocks(text);
+
+	return blocks.map((block, index) => {
+		if (block.type === "code") {
+			return (
+				<CodeBlock
+					// biome-ignore lint/suspicious/noArrayIndexKey: stable index
+					key={index}
+					code={block.content || ""}
+					language={block.language}
+				/>
+			);
+		}
+
+		if (block.type === "blockquote") {
+			const contentLines = block.content?.split("\n") || [];
+			let author = "";
+			let quoteText = "";
+
+			const lastLine = contentLines[contentLines.length - 1]?.trim() || "";
+			if (lastLine.startsWith("-") || lastLine.startsWith("—")) {
+				author = lastLine.replace(/^[-—]\s*/, "");
+				quoteText = contentLines.slice(0, -1).join("\n");
+			} else {
+				quoteText = block.content || "";
+			}
+
+			return (
+				<div
+					// biome-ignore lint/suspicious/noArrayIndexKey: stable index
+					key={index}
+					className="my-3.5 pl-4 border-l-2 border-purple-500 bg-purple-950/25 py-3 pr-3.5 rounded-r-xl relative overflow-hidden group border border-purple-500/10 shadow-[inset_0_1px_10px_rgba(168,85,247,0.05)]"
+				>
+					<div className="absolute top-2.5 right-2.5 text-purple-500/10 group-hover:text-purple-500/20 transition-colors pointer-events-none">
+						<Quote className="w-8 h-8 rotate-180" />
+					</div>
+					<p className="text-[12px] italic text-purple-200/95 leading-relaxed font-serif">
+						{parseInlineMarkdown(quoteText)}
+					</p>
+					{author && (
+						<p className="text-[10px] text-right mt-2 text-purple-400 font-sans tracking-wide font-medium uppercase">
+							— {author}
+						</p>
+					)}
+				</div>
+			);
+		}
+
+		if (block.type === "table") {
+			return (
+				<div
+					// biome-ignore lint/suspicious/noArrayIndexKey: stable index
+					key={index}
+					className="my-3 overflow-x-auto rounded-xl border border-purple-500/10 bg-purple-950/10 backdrop-blur-sm"
+				>
+					<table className="w-full text-[12px] text-left border-collapse">
+						<thead>
+							<tr className="bg-purple-950/65 border-b border-purple-500/15 text-[11px] uppercase tracking-wider text-purple-200">
+								{block.tableHeaders?.map((header, headIdx) => (
+									<th
+										// biome-ignore lint/suspicious/noArrayIndexKey: table headers are static and safe to index
+										key={headIdx}
+										className="px-4 py-2 font-semibold text-purple-300 border-r border-purple-500/5 last:border-r-0"
+									>
+										{parseInlineMarkdown(header)}
+									</th>
+								))}
+							</tr>
+						</thead>
+						<tbody className="divide-y divide-purple-500/5">
+							{block.tableRows?.map((row, rowIdx) => (
+								<tr
+									// biome-ignore lint/suspicious/noArrayIndexKey: row indexing is stable for static rendering
+									key={rowIdx}
+									className="hover:bg-white/[0.02] even:bg-white/[0.01] transition-colors"
+								>
+									{row.map((cell, cellIdx) => (
+										<td
+											// biome-ignore lint/suspicious/noArrayIndexKey: cell indexing is stable for static rendering
+											key={cellIdx}
+											className="px-4 py-2.5 border-r border-purple-500/5 text-purple-100/90 last:border-r-0 font-medium"
+										>
+											{parseInlineMarkdown(cell)}
+										</td>
+									))}
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
+			);
+		}
+
+		if (block.type === "heading") {
+			const HeadingTag = `h${Math.min(6, block.level || 3)}` as
+				| "h1"
+				| "h2"
+				| "h3"
+				| "h4"
+				| "h5"
+				| "h6";
+			const classNames =
+				block.level === 1
+					? "text-base font-bold text-white mt-4 mb-2 pb-1 border-b border-purple-500/20"
+					: block.level === 2
+						? "text-sm font-semibold text-white mt-3.5 mb-2 pb-0.5 border-b border-purple-500/10"
+						: "text-xs font-semibold text-purple-300 mt-3 mb-1.5 uppercase tracking-wide";
+
+			return (
+				<HeadingTag
+					// biome-ignore lint/suspicious/noArrayIndexKey: stable index
+					key={index}
+					className={classNames}
+				>
+					{parseInlineMarkdown(block.content || "")}
+				</HeadingTag>
+			);
+		}
+
+		if (block.type === "list") {
+			if (block.listType === "unordered") {
+				return (
+					<ul
+						// biome-ignore lint/suspicious/noArrayIndexKey: stable index
+						key={index}
+						className="list-disc pl-5 my-2.5 space-y-1.5 text-purple-200/90 text-[13px]"
+					>
+						{block.listItems?.map((item, itemIdx) => (
+							// biome-ignore lint/suspicious/noArrayIndexKey: stable index
+							<li key={itemIdx}>{parseInlineMarkdown(item)}</li>
+						))}
+					</ul>
+				);
+			}
+			return (
+				<ol
+					// biome-ignore lint/suspicious/noArrayIndexKey: stable index
+					key={index}
+					className="list-decimal pl-5 my-2.5 space-y-1.5 text-purple-200/90 text-[13px]"
+				>
+					{block.listItems?.map((item, itemIdx) => (
+						// biome-ignore lint/suspicious/noArrayIndexKey: stable index
+						<li key={itemIdx}>{parseInlineMarkdown(item)}</li>
+					))}
+				</ol>
+			);
+		}
+
+		return (
+			<p
+				// biome-ignore lint/suspicious/noArrayIndexKey: stable index
+				key={index}
+				className="my-2 text-purple-100 text-[13px] leading-relaxed last:mb-0"
+			>
+				{parseInlineMarkdown(block.content || "")}
+			</p>
+		);
+	});
+}
+
+function parseInlineMarkdown(text: string): React.ReactNode {
+	const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+	const parts: { type: "text" | "link"; text: string; url?: string }[] = [];
+
+	let lastIndex = 0;
+	let match: RegExpExecArray | null;
+	// biome-ignore lint/suspicious/noAssignInExpressions: standard regex loop
+	while ((match = linkRegex.exec(text)) !== null) {
+		const matchIndex = match.index;
+		if (matchIndex > lastIndex) {
+			parts.push({ type: "text", text: text.substring(lastIndex, matchIndex) });
+		}
+		parts.push({ type: "link", text: match[1], url: match[2] });
+		lastIndex = linkRegex.lastIndex;
+	}
+	if (lastIndex < text.length) {
+		parts.push({ type: "text", text: text.substring(lastIndex) });
+	}
+
+	return parts.map((part, index) => {
+		if (part.type === "link" && part.url) {
+			const isSafe =
+				part.url.startsWith("http://") ||
+				part.url.startsWith("https://") ||
+				(part.url.startsWith("/") && !part.url.startsWith("//"));
+
+			if (isSafe) {
+				const isExternal =
+					part.url.startsWith("http://") || part.url.startsWith("https://");
+				return (
+					<a
+						// biome-ignore lint/suspicious/noArrayIndexKey: stable index
+						key={index}
+						href={part.url}
+						target={isExternal ? "_blank" : undefined}
+						rel={isExternal ? "noopener noreferrer" : undefined}
+						className="text-purple-400 hover:text-purple-300 hover:underline inline-flex items-center gap-0.5 transition-colors font-medium"
+					>
+						{part.text}
+						{isExternal && (
+							<ExternalLink className="w-3 h-3 text-purple-400/60 inline" />
+						)}
+					</a>
+				);
+			}
+
+			// For unsafe URL schemes, render as plain text
+			return `[${part.text}](${part.url})`;
+		}
+
+		const formatText = part.text;
+		const codeParts = formatText.split(/(`.*?`)/g);
+		return codeParts.map((cPart, cIndex) => {
+			const cKey = `${index}-${cIndex}`;
+			if (cPart.startsWith("`") && cPart.endsWith("`")) {
+				return (
+					<code
+						key={cKey}
+						className="px-1 py-0.5 rounded bg-purple-950/60 border border-purple-500/20 text-purple-300 font-mono text-[11px]"
+					>
+						{cPart.substring(1, cPart.length - 1)}
+					</code>
+				);
+			}
+
+			const boldParts = cPart.split(/(\*\*.*?\*\*)/g);
+			return boldParts.map((bPart, bIndex) => {
+				const bKey = `${cKey}-${bIndex}`;
+				if (
+					bPart.startsWith("**") &&
+					bPart.endsWith("**") &&
+					bPart.length >= 4
+				) {
+					const innerBold = bPart.substring(2, bPart.length - 2);
+					return (
+						<strong key={bKey} className="font-bold text-white">
+							{parseItalics(innerBold, bKey)}
+						</strong>
+					);
+				}
+				return parseItalics(bPart, bKey);
+			});
+		});
+	});
+}
+
+function parseItalics(text: string, parentKey: string): React.ReactNode {
+	const italicParts = text.split(/(\*.*?\*)/g);
+	return italicParts.map((iPart, iIndex) => {
+		const iKey = `${parentKey}-${iIndex}`;
+		if (iPart.startsWith("*") && iPart.endsWith("*") && iPart.length >= 2) {
+			return (
+				<em key={iKey} className="italic text-purple-200/90 font-serif">
+					{iPart.substring(1, iPart.length - 1)}
+				</em>
+			);
+		}
+		return iPart;
+	});
 }
